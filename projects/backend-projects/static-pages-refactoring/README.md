@@ -4,6 +4,8 @@
 
 **Successfully refactored a monolithic 342-line Azure Function into a clean microservices architecture with 4 specialized services, achieving 73% code reduction while improving maintainability, performance, and error handling.**
 
+**Core Business Impact**: The refactoring eliminated heavy processing logic from the Umbraco save and publish workflow, which was causing significant delays. By moving static page generation to a separate Service Bus-triggered function, the save and publish process now runs independently and much faster, while static page generation happens asynchronously in the background.
+
 This case study documents the transformation of a complex static page generation system from a single monolithic function to a well-architected microservices solution with clear separation of concerns and comprehensive error handling.
 
 ---
@@ -25,6 +27,8 @@ This case study documents the transformation of a complex static page generation
 ✅ **Performance Optimization** - Lazy loading and caching  
 ✅ **Error Handling** - Comprehensive retry logic  
 ✅ **Maintainability** - Clear separation of concerns  
+✅ **Save & Publish Optimization** - Eliminated blocking operations from CMS workflow  
+✅ **Asynchronous Processing** - Static page generation moved to background processing
 
 ---
 
@@ -76,6 +80,32 @@ public class DeliveryApiService
     // Handles external API calls (99 lines)
 }
 ```
+
+---
+
+## 🚨 **Business Problem Solved**
+
+### **The Challenge**
+The original system had a critical performance bottleneck where **heavy static page generation logic was executed synchronously during the Umbraco save and publish process**. This caused:
+
+- **Slow Save & Publish**: Content editors experienced significant delays when publishing content
+- **Blocking Operations**: The entire CMS workflow was held up by static page generation
+- **Poor User Experience**: Content editors had to wait for static page processing to complete
+- **Resource Contention**: Database and external service calls during critical CMS operations
+
+### **The Solution**
+By refactoring the architecture, we achieved:
+
+- **Asynchronous Processing**: Static page generation moved to Service Bus-triggered background processing
+- **Non-Blocking Save & Publish**: CMS operations complete immediately, static pages generate separately
+- **Improved User Experience**: Content editors can publish content without waiting
+- **Better Resource Management**: Static page generation doesn't compete with CMS operations
+
+### **Business Impact**
+- **Faster Content Publishing**: Save and publish operations are now significantly faster
+- **Better Editor Experience**: No more waiting for static page generation
+- **Improved System Reliability**: CMS operations are no longer dependent on static page processing
+- **Scalable Architecture**: Static page generation can scale independently of CMS operations
 
 ---
 
@@ -314,6 +344,12 @@ public interface IDeliveryApiService
 - **Easier Debugging**: Clear service boundaries make issues easier to isolate
 - **Better Testing**: Each service can be tested independently
 - **Reduced Complexity**: 73% code reduction improves maintainability
+
+### **CMS Performance Impact**
+- **Save & Publish Speed**: Eliminated blocking operations from CMS workflow
+- **Editor Experience**: Content editors no longer wait for static page generation
+- **System Reliability**: CMS operations independent of static page processing
+- **Resource Optimization**: No more resource contention during content publishing
 
 ### **Operational Benefits**
 - **Better Performance**: Lazy loading and efficient caching

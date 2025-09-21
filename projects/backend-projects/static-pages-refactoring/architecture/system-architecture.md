@@ -9,28 +9,38 @@ This document provides a comprehensive visual overview of the system architectur
 
 ```mermaid
 graph TD
-    A[Umbraco CMS] -->|Publish/Unpublish| B[Delivery API]
-    B -->|URL/GUID Message| C[Service Bus Queue]
-    C -->|Message Processing| D[Azure Function]
-    D -->|Content Orchestration| E[ContentOrchestrationService<br/>105 lines]
-    E -->|Content Processing| F[ContentProcessingService<br/>184 lines]
-    E -->|API Calls| G[DeliveryApiService<br/>99 lines]
-    E -->|HTML Generation| H[StaticPageGenerationService<br/>69 lines]
-    H -->|Generate HTML| I[Node.js Service]
-    I -->|Static HTML| J[Akamai CDN]
-    J -->|Serve Content| K[End Users]
+    subgraph "CMS Workflow (Fast & Non-Blocking)"
+        A[Umbraco CMS] -->|Save & Publish| B[Content Published]
+        B -->|Immediate Response| C[Editor Can Continue]
+    end
     
-    L[Error Handling] -->|Retry Logic| C
-    L -->|Dead Letter Queue| M[Manual Recovery]
+    subgraph "Background Processing (Asynchronous)"
+        D[Delivery API] -->|URL/GUID Message| E[Service Bus Queue]
+        E -->|Message Processing| F[Azure Function]
+        F -->|Content Orchestration| G[ContentOrchestrationService<br/>105 lines]
+        G -->|Content Processing| H[ContentProcessingService<br/>184 lines]
+        G -->|API Calls| I[DeliveryApiService<br/>99 lines]
+        G -->|HTML Generation| J[StaticPageGenerationService<br/>69 lines]
+        J -->|Generate HTML| K[Node.js Service]
+        K -->|Static HTML| L[Akamai CDN]
+        L -->|Serve Content| M[End Users]
+    end
+    
+    B -.->|Triggers| D
+    
+    N[Error Handling] -->|Retry Logic| E
+    N -->|Dead Letter Queue| O[Manual Recovery]
     
     style A fill:#e1f5fe
-    style D fill:#f3e5f5
-    style E fill:#e8f5e8
-    style F fill:#e8f5e8
+    style B fill:#e8f5e8
+    style C fill:#e8f5e8
+    style F fill:#f3e5f5
     style G fill:#e8f5e8
     style H fill:#e8f5e8
-    style I fill:#fff3e0
-    style J fill:#fce4ec
+    style I fill:#e8f5e8
+    style J fill:#e8f5e8
+    style K fill:#fff3e0
+    style L fill:#fce4ec
 ```
 
 ---
@@ -73,21 +83,26 @@ graph LR
 
 ## 🔧 **Before vs After Architecture**
 
-### **Before: Monolithic Function**
+### **Before: Blocking Save & Publish**
 ```mermaid
 graph TD
-    A[Service Bus Message] --> B[Monolithic Function<br/>342 lines]
-    B -->|All Logic| C[Content Validation]
-    B -->|All Logic| D[URL Processing]
-    B -->|All Logic| E[HTML Generation]
-    B -->|All Logic| F[Akamai Upload]
-    B -->|All Logic| G[Error Handling]
-    B -->|All Logic| H[Retry Logic]
-    B -->|All Logic| I[Logging]
-    B -->|All Logic| J[Service Bus]
-    B -->|All Logic| K[Environment Config]
+    subgraph "Slow CMS Workflow"
+        A[Umbraco CMS] -->|Save & Publish| B[Content Published]
+        B -->|BLOCKING| C[Static Page Generation<br/>342 lines]
+        C -->|Wait for Completion| D[Editor Can Continue]
+    end
     
-    style B fill:#ffebee
+    subgraph "Monolithic Processing"
+        C -->|All Logic| E[Content Validation]
+        C -->|All Logic| F[URL Processing]
+        C -->|All Logic| G[HTML Generation]
+        C -->|All Logic| H[CDN Upload]
+        C -->|All Logic| I[Error Handling]
+        C -->|All Logic| J[Retry Logic]
+    end
+    
+    style A fill:#e1f5fe
+    style B fill:#fff3e0
     style C fill:#ffebee
     style D fill:#ffebee
     style E fill:#ffebee
@@ -96,36 +111,47 @@ graph TD
     style H fill:#ffebee
     style I fill:#ffebee
     style J fill:#ffebee
-    style K fill:#ffebee
 ```
 
-### **After: Microservices Architecture**
+### **After: Non-Blocking Save & Publish**
 ```mermaid
 graph TD
-    A[Service Bus Message] --> B[ContentOrchestrationService<br/>105 lines<br/>23%]
-    B -->|Delegates| C[ContentProcessingService<br/>184 lines<br/>40%]
-    B -->|Delegates| D[StaticPageGenerationService<br/>69 lines<br/>15%]
-    B -->|Uses| E[DeliveryApiService<br/>99 lines<br/>22%]
+    subgraph "Fast CMS Workflow"
+        A[Umbraco CMS] -->|Save & Publish| B[Content Published]
+        B -->|Immediate Response| C[Editor Can Continue]
+    end
     
-    C -->|Business Logic| F[Content Validation]
-    C -->|Bulk Processing| G[Service Bus Integration]
-    C -->|Language Support| H[Multi-language Processing]
-    D -->|HTML Operations| I[HTML Generation]
-    D -->|CDN Operations| J[Akamai Upload]
-    E -->|API Operations| K[Delivery API Calls]
-    E -->|Ancestor Loading| L[Lazy Loading]
+    subgraph "Background Processing (Asynchronous)"
+        D[Service Bus Message] --> E[ContentOrchestrationService<br/>105 lines<br/>23%]
+        E -->|Delegates| F[ContentProcessingService<br/>184 lines<br/>40%]
+        E -->|Delegates| G[StaticPageGenerationService<br/>69 lines<br/>15%]
+        E -->|Uses| H[DeliveryApiService<br/>99 lines<br/>22%]
+        
+        F -->|Business Logic| I[Content Validation]
+        F -->|Bulk Processing| J[Service Bus Integration]
+        F -->|Language Support| K[Multi-language Processing]
+        G -->|HTML Operations| L[HTML Generation]
+        G -->|CDN Operations| M[CDN Upload]
+        H -->|API Operations| N[Delivery API Calls]
+        H -->|Ancestor Loading| O[Lazy Loading]
+    end
     
+    B -.->|Triggers| D
+    
+    style A fill:#e1f5fe
     style B fill:#e8f5e8
     style C fill:#e8f5e8
-    style D fill:#e8f5e8
     style E fill:#e8f5e8
-    style F fill:#f1f8e9
-    style G fill:#f1f8e9
-    style H fill:#f1f8e9
+    style F fill:#e8f5e8
+    style G fill:#e8f5e8
+    style H fill:#e8f5e8
     style I fill:#f1f8e9
     style J fill:#f1f8e9
     style K fill:#f1f8e9
     style L fill:#f1f8e9
+    style M fill:#f1f8e9
+    style N fill:#f1f8e9
+    style O fill:#f1f8e9
 ```
 
 ---
