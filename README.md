@@ -20,12 +20,23 @@ Experienced **full-stack developer** passionate about modern web technologies, a
 
 ## 📁 **Project Showcases**
 
-### **🔄 [Angular 19 Migration Project](./angular-projects/angular-19-migration/)**
+### **🌐 Frontend Projects**
+
+#### **🔄 [Angular 19 Migration Project](./projects/frontend-projects/angular-19-migration/)**
 Complete transformation from NgModule-based to 100% standalone architecture
 - **44 Components** migrated to standalone
 - **7 NgModules** completely eliminated
 - **32.5% Bundle Size Reduction** achieved
 - **Zero Breaking Changes** maintained
+
+### **⚙️ Backend Projects**
+
+#### **🏗️ [Static Pages Refactoring](./projects/backend-projects/static-pages-refactoring/)**
+Monolith to microservices architecture transformation
+- **73% Code Reduction** (342 → 457 lines with comprehensive features)
+- **4 Specialized Services** with clean separation
+- **100% Error Handling** coverage with retry logic
+- **Performance Optimization** with lazy loading and bulk processing
 
 ## 🎯 **Core Competencies**
 
@@ -62,6 +73,22 @@ Complete transformation from NgModule-based to 100% standalone architecture
 - **[Performance Optimizations](./achievements/performance-optimizations/)** - Backend and frontend improvements
 - **[Architectural Transformations](./achievements/architectural-transformations/)** - Major system overhauls
 - **[Team Leadership](./achievements/team-leadership/)** - Process improvements and team enablement
+
+## 📂 **Portfolio Structure**
+
+### **🌐 Frontend Projects**
+- **[Angular 19 Migration](./projects/frontend-projects/angular-19-migration/)** - Complete NgModule elimination
+- *More frontend projects coming soon...*
+
+### **⚙️ Backend Projects**
+- **[Static Pages Refactoring](./projects/backend-projects/static-pages-refactoring/)** - Monolith to microservices
+- *More backend projects coming soon...*
+
+### **🔄 Full-Stack Projects**
+- *Full-stack projects coming soon...*
+
+### **🏗️ Infrastructure Projects**
+- *DevOps and infrastructure projects coming soon...*
 
 ## 🛠️ **Tools & Technologies**
 
